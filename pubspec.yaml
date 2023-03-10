@@ -1,0 +1,22 @@
+name: alligator
+description: Simple Dependency Injector
+version: 0.1.0
+publish_to: none
+homepage: https://mateussiqueira.dev
+
+environment:
+  sdk: '>=2.19.2 <3.0.0'
+  flutter: ">=1.17.0"
+
+dependencies:
+  collection: ^1.17.0
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+
