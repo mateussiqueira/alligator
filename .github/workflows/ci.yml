@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: google/dart:latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: dart pub get
+      - name: Run tests with coverage
+        run: |
+          pub global activate coverage
+          echo "Running tests..."
+          pub global run coverage:collect_coverage --port=8111 --out=coverage.json --wait-paused --resume-isolates &
+          dart --disable-service-auth-codes --enable-vm-service=8111 --pause-isolates-on-exit test/test_all.dart
+          wait
+          echo "Generating LCOV report..."
+          pub global run coverage:format_coverage --lcov --in=coverage.json --out=lcov.info --packages=.packages --report-on=lib
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./lcov.info
+          fail_ci_if_error: true
