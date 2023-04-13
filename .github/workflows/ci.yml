@@ -9,25 +9,28 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: google/dart:latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v1
+        with:
+          channel: stable
+
+      - name: Load Repository
+        uses: actions/checkout@v2
+
       - name: Install dependencies
-        run: dart pub get
+        run: flutter pub get
+
       - name: Run tests with coverage
         run: |
-          pub global activate coverage
-          echo "Running tests..."
-          pub global run coverage:collect_coverage --port=8111 --out=coverage.json --wait-paused --resume-isolates &
-          dart --disable-service-auth-codes --enable-vm-service=8111 --pause-isolates-on-exit test/test_all.dart
-          wait
-          echo "Generating LCOV report..."
-          pub global run coverage:format_coverage --lcov --in=coverage.json --out=lcov.info --packages=.packages --report-on=lib
+          sudo apt-get install lcov
+          flutter test --coverage
+          lcov --list coverage/lcov.info
+
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./lcov.info
+          file: ./coverage/lcov.info
           fail_ci_if_error: true
