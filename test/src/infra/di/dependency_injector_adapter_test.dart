@@ -1,37 +1,78 @@
-import 'package:alligator/alligator.dart' show Alligator;
-import 'package:alligator/src/domain/domain.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'dart:async';
+
+import 'package:alligator/alligator.dart';
+import 'package:test/test.dart';
+
+class TestClass {
+  final String data;
+  TestClass(this.data);
+}
 
 void main() {
-  late final DependencyInjector dependencyInjector;
+  group('DependencyInjector', () {
+    test('register and get instance', () {
+      final di = Alligator();
+      di.register<TestClass>(() => TestClass('Hello, Alligator!'),
+          isSingleton: false);
 
-  setUp(() {
-    dependencyInjector = HomeModule.initialize();
+      final instance = di.get<TestClass>();
+      expect(instance, isA<TestClass>());
+      expect(instance.data, 'Hello, Alligator!');
+    });
+
+    test('register and get singleton', () {
+      final di = Alligator();
+      di.register<TestClass>(() => TestClass('Hello, Alligator!'),
+          isSingleton: true);
+
+      final instance1 = di.get<TestClass>();
+      final instance2 = di.get<TestClass>();
+      expect(identical(instance1, instance2), isTrue);
+    });
+
+    test('register and get non-singleton', () {
+      final di = Alligator();
+      di.register<TestClass>(() => TestClass('Hello, Alligator!'),
+          isSingleton: false);
+
+      final instance1 = di.get<TestClass>();
+      final instance2 = di.get<TestClass>();
+      expect(identical(instance1, instance2), isFalse);
+    });
+
+    test('get unregistered instance', () {
+      final di = Alligator();
+      bool exceptionThrown = false;
+
+      runZonedGuarded(() {
+        di.get<TestClass>();
+      }, (error, stackTrace) {
+        exceptionThrown = error is Exception &&
+            error.toString() ==
+                'Exception: [Exception] Instance TestClass not found';
+      });
+
+      expect(exceptionThrown, isTrue);
+    });
   });
-  test('Should call Injection with correct values', () {
-    final controller = dependencyInjector.get<Controller>();
-    final value = controller.value;
-    expect(value, 1);
+
+  group('InstanceGenerator', () {
+    test('create singleton instance', () {
+      final generator = InstanceGenerator<TestClass>(
+          () => TestClass('Hello, Alligator!'), true);
+
+      final instance1 = generator.getInstance();
+      final instance2 = generator.getInstance();
+      expect(identical(instance1, instance2), isTrue);
+    });
+
+    test('create non-singleton instance', () {
+      final generator = InstanceGenerator<TestClass>(
+          () => TestClass('Hello, Alligator!'), false);
+
+      final instance1 = generator.getInstance();
+      final instance2 = generator.getInstance();
+      expect(identical(instance1, instance2), isFalse);
+    });
   });
-}
-
-abstract class Controller {
-  final int value;
-
-  Controller(this.value);
-}
-
-class HomeController implements Controller {
-  @override
-  int get value => 1;
-}
-
-class HomeModule {
-  static Alligator initialize() {
-    var alligator = Alligator();
-
-    alligator.register<Controller>(() => HomeController());
-
-    return alligator;
-  }
 }
