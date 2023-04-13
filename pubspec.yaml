@@ -1,8 +1,7 @@
 name: alligator
-description: Simple Dependency Injector
-version: 0.1.0
-publish_to: none
-homepage: https://mateussiqueira.dev
+version: 1.0.0
+description: A lightweight and easy-to-use dependency injection library for Dart.
+homepage: https://github.com/mateussiqueira/alligator
 
 environment:
   sdk: '>=2.19.6 <3.0.0'
