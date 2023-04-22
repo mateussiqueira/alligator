@@ -1,5 +1,5 @@
 name: alligator
-version: 1.0.0
+version: 1.0.1
 description: A lightweight and easy-to-use dependency injection library for Dart.
 homepage: https://github.com/mateussiqueira/alligator
 
